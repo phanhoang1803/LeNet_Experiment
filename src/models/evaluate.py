@@ -16,6 +16,7 @@ def evaluate_model(model, test_dataset, args):
     print(f"Test accuracy: {accuracy}")
     
     # Save the results as JSON
+    os.makedirs(args.eval_res_dir, exist_ok=True)
     result_dict = {'test_loss': loss, 'test_accuracy': accuracy}
     with open(outfile, 'w') as json_file:
         json.dump(result_dict, json_file)
