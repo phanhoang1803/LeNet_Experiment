@@ -83,6 +83,7 @@ def main():
         history = train_model(model, train_ds=train_ds, validation_ds=validation_ds, learning_rate=args.learning_rate, epochs=args.epochs, batch_size=args.batch_size, verbose=args.verbose, callbacks=[checkpoint_callback])
         
         # Save history for analysis
+        os.makedirs(os.path.join(args.log_dir, 'tb_logs'), exist_ok=True)
         np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_lenet_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
     elif args.mode == 'evaluate':
         model = load_model(args.pretrain_path)
