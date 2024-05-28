@@ -1,26 +1,28 @@
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-
+# from tensorflow import keras
 import tensorflow as tf
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import load_model, Model
+from tensorflow.keras.layers import Input, AveragePooling2D, Dense
+
 import argparse
-from data.data_loader import load_data, preprocess
-from models.lenet import LeNet
+from data.data_loader import load_data
+from data.preprocess import adapt_input, preprocess
+from models.lenet import LeNetModel
 from models.train import train_model
 from models.evaluate import evaluate_model
 from visualization.visualize import plot_training_curves
 import numpy as np
-import json
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='LeNet Experiment')
 
-    parser.add_argument('--mode', type=str, default='train', choices=['train', 'evaluate', 'fine-tune'],
+    parser.add_argument('--mode', type=str, default='train', choices=['train-eval', 'train', 'evaluate', 'fine-tune'],
                         help='Mode: train, evaluate, fine-tune')
     parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist', 'fmnist', 'caltech101', 'caltech256'],
                         help='Dataset name')
-    parser.add_argument('--raw-dir', type='str', default=None, 
+    parser.add_argument('--raw-dir', type=str, default=None, 
                         help='Directory to raw dataset for Caltech 101 and 256. E.g: path/to/101_ObjectCategories')
     parser.add_argument('-lr', '--learning-rate', type=float, default=0.001,
                         help='Learning rate for training')
@@ -43,22 +45,27 @@ def parse_arguments():
     return args
     
 def main():
+    """
+    Main function that loads the arguments, loads the dataset and parameters, 
+    and trains the model based on the given mode.
+    """
     args = parse_arguments()
     
     # Load dataset and parameters
-    dataset = load_data(args.dataset)
+    dataset = load_data(args.dataset, args.raw_dir)
     train_ds, validation_ds, test_ds = dataset['train'], dataset['valid'], dataset['test']
     
-    train_ds = train_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
-    validation_ds = validation_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
-    test_ds = test_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
-    
-    # input_shape = dataset['input_shape']
+    input_shape = dataset['input_shape']
     num_classes = dataset['num_classes']
     
     # Train the model
     if args.mode == 'train':
-        model = LeNet(num_classes=num_classes)
+        # Preprocess and batch the datasets
+        train_ds = train_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
+        validation_ds = validation_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
+        test_ds = test_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
+        
+        model = LeNetModel(num_classes=num_classes, input_shape=input_shape)
         
         # Define the checkpoint callback
         checkpoint_dir = args.log_dir + '/ckpt'
@@ -72,6 +79,7 @@ def main():
             verbose=1
         )
         
+        # Train the model
         history = train_model(model, train_ds=train_ds, validation_ds=validation_ds, learning_rate=args.learning_rate, epochs=args.epochs, batch_size=args.batch_size, verbose=args.verbose, callbacks=[checkpoint_callback])
         
         # Save history for analysis
@@ -79,23 +87,44 @@ def main():
     elif args.mode == 'evaluate':
         model = load_model(args.pretrain_path)
         
-        loss, accuracy = evaluate_model(model, test_ds)
+        test_ds = test_ds.map(lambda x, y: (adapt_input(x, model.input_shape[1:]), y)).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
+        # test_ds = test_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
         
-        outfile_prefix = os.path.splitext(os.path.basename(args.pretrain_path))[0]
-        outfile = os.path.join(args.eval_res_dir, f'test_results_{outfile_prefix}.json')
+        # Load the pre-trained model
         
-        print(f'Test loss: {loss}')
-        print(f"Test accuracy: {accuracy}")
-        
-         # Save the results as JSON
-        result_dict = {'test_loss': loss, 'test_accuracy': accuracy}
-        with open(outfile, 'w') as json_file:
-            json.dump(result_dict, json_file)
+        # Evaluate the model
+        loss, accuracy = evaluate_model(model, test_ds, args)
     elif args.mode == 'fine-tune':
-        # model = load_model(args.pretrain_path)
-        print('Fine tune mode')
-        pass
+        # Load the pre-trained model
+        base_model = load_model(args.pretrain_path)
+        
+        # Convert dataset to appropriate format
+        train_ds = train_ds.map(lambda x, y: (adapt_input(x, base_model.input_shape[1:]), y)).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
+        validation_ds = validation_ds.map(lambda x, y: (adapt_input(x, base_model.input_shape[1:]), y)).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
 
+        # Define the model
+        outputs = Dense(units=num_classes, activation='softmax', name='output_layer')(base_model.layers[-2].output)
+        model = Model(inputs=base_model.input, outputs=outputs)
+        
+        # Freeze layers for transfer learning
+        base_model.trainable = False
+        history = train_model(model, train_ds=train_ds, validation_ds=validation_ds, learning_rate=0.001, epochs=10, batch_size=args.batch_size, verbose=args.verbose, callbacks=None)
+        
+        # Unfreeze layers for fine-tuning
+        base_model.trainable = True
+        
+        checkpoint_dir = args.log_dir + '/ckpt'
+        checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_lenet_{os.path.basename(os.path.dirname(args.pretrain_path)).split("_")[-1]}finetune_{args.dataset}.keras')
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+            filepath=checkpoint_path,
+            save_best_only=True,
+            monitor='val_accuracy',
+            mode='max',
+            verbose=1
+        )
+        
+        history = train_model(model, train_ds=train_ds, validation_ds=validation_ds, learning_rate=args.learning_rate, epochs=args.epochs, batch_size=args.batch_size, verbose=args.verbose, callbacks=[checkpoint_callback])
 
 if __name__ == "__main__":
     main()

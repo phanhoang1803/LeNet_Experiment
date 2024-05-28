@@ -8,12 +8,22 @@ import shutil
 
 data_dir = '../data'
 
-def preprocess(image, label):
-    image = tf.cast(image, tf.float32) / 255.0
-    
-    return image, label
-
 def load_processed_caltech_data(processed_dir):
+    """
+    Load the processed data from the given processed directory.
+    
+    Args:
+        processed_dir (str): Path to the directory containing the processed data.
+        
+    Returns:
+        train_ds (tf.data.Dataset): Training dataset.
+        valid_ds (tf.data.Dataset): Validation dataset.
+        test_ds (tf.data.Dataset): Test dataset.
+        input_shape (tuple): Shape of the input images.
+        num_classes (int): Number of classes in the dataset.
+    """
+    print('Loading processed Caltech dataset')
+    
     train_dir = os.path.join(processed_dir, 'train')
     valid_dir = os.path.join(processed_dir, 'valid')
     test_dir = os.path.join(processed_dir, 'test')
@@ -45,21 +55,38 @@ def load_processed_caltech_data(processed_dir):
     return dataset
 
 def create_processed_caltech_dataset(raw_dir, processed_dir):
+    """
+    This function takes the raw dataset directory as input and processes it by creating separate directories
+    for the train, validation, and test sets. It then copies the images into their respective directories.
+    
+    Args:
+        raw_dir (str): Path to the directory containing the raw data.
+        processed_dir (str): Path to the directory where the processed data will be saved.
+    
+    Returns:
+        train_ds (tf.data.Dataset): Training dataset.
+        valid_ds (tf.data.Dataset): Validation dataset.
+        test_ds (tf.data.Dataset): Test dataset.
+        input_shape (tuple): Shape of the input images.
+        num_classes (int): Number of classes in the dataset.
+    """
+    print('Creating processed Caltech dataset')
+    
     train_dir = os.path.join(processed_dir, 'train')
     valid_dir = os.path.join(processed_dir, 'valid')
     test_dir = os.path.join(processed_dir, 'test')
     
-    os.makedirs(processed_dir, exist_ok=True)
     os.makedirs(train_dir, exist_ok=True)
     os.makedirs(valid_dir, exist_ok=True)
     os.makedirs(test_dir, exist_ok=True)
     
     # Get list of categories
     categories = [f for f in sorted(os.listdir(raw_dir))]
-    categories.remove('BACKGROUND_Google')
+    if 'BACKGROUND_Google' in categories:
+        categories.remove('BACKGROUND_Google') 
     for directory in [train_dir, valid_dir, test_dir]:
         for category in categories:
-            os.mkdir(os.path.join(directory, category))
+            os.makedirs(os.path.join(directory, category))
     
     for i, category in enumerate(categories):
         category_dir = os.path.join(raw_dir, category)
@@ -88,6 +115,18 @@ def create_processed_caltech_dataset(raw_dir, processed_dir):
     return load_processed_caltech_data(processed_dir)
 
 def load_data(dataset_name, raw_dir=None):
+    """
+    Load the dataset with the given name.
+    
+    Args:
+        dataset_name (str): Name of the dataset.
+        raw_dir (str): Path to the directory containing the raw data (Optional).
+        
+    Returns:
+        dataset (dict): Dictionary containing the dataset.
+    """
+    
+    # Load MNIST dataset
     if dataset_name == 'mnist':
         print('Loading MNIST dataset')
         train_ds, valid_ds, test_ds = tfds.load('mnist', split=['train[:80%]', 'train[80%:]', 'test'], as_supervised=True)
@@ -101,6 +140,8 @@ def load_data(dataset_name, raw_dir=None):
         }
         
         return dataset
+    
+    # Load Fashion MNIST dataset
     elif dataset_name == 'fmnist':
         print('Loading Fashion MNIST dataset')
         train_ds, valid_ds, test_ds = tfds.load('fashion_mnist', split=['train[:80%]', 'train[80%:]', 'test'], as_supervised=True)
@@ -114,6 +155,8 @@ def load_data(dataset_name, raw_dir=None):
         }
         
         return dataset
+    
+    # Load Caltech 101 dataset
     elif dataset_name == 'caltech101':
         print('Loading Caltech 101 dataset')
         processed_dir = os.path.join(data_dir, 'processed', 'caltech101')
@@ -121,13 +164,16 @@ def load_data(dataset_name, raw_dir=None):
         valid_dir = os.path.join(processed_dir, 'valid')
         test_dir = os.path.join(processed_dir, 'test')
         
+        # If the dataset is already processed, load it
         if os.path.exists(train_dir) and os.path.exists(valid_dir) and os.path.exists(test_dir):
             return load_processed_caltech_data(processed_dir=processed_dir)
         else:
-            # raw_dir = os.path.join(data_dir, 'raw', '101_ObjectCategories')
+            # If the dataset is not processed, process it
+            assert raw_dir
             assert os.path.exists(raw_dir)
             return create_processed_caltech_dataset(raw_dir=raw_dir, processed_dir=processed_dir)
         
+    # Load Caltech 256 dataset
     elif dataset_name == 'caltech256':
         print('Loading Caltech 256 dataset')
         processed_dir = os.path.join(data_dir, 'processed', 'caltech256')
@@ -135,10 +181,12 @@ def load_data(dataset_name, raw_dir=None):
         valid_dir = os.path.join(processed_dir, 'valid')
         test_dir = os.path.join(processed_dir, 'test')
         
+        # If the dataset is already processed, load it
         if os.path.exists(train_dir) and os.path.exists(valid_dir) and os.path.exists(test_dir):
             return load_processed_caltech_data(processed_dir=processed_dir)
         else:
-            # raw_dir = os.path.join(data_dir, 'raw', '256_ObjectCategories')
+            # If the dataset is not processed, process it
+            assert raw_dir
             assert os.path.exists(raw_dir)
             return create_processed_caltech_dataset(raw_dir=raw_dir, processed_dir=processed_dir)
         
