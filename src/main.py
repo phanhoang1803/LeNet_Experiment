@@ -18,9 +18,9 @@ import numpy as np
 def parse_arguments():
     parser = argparse.ArgumentParser(description='LeNet Experiment')
 
-    parser.add_argument('--mode', type=str, default='train', choices=['train-eval', 'train', 'evaluate', 'fine-tune'],
+    parser.add_argument('--mode', type=str, default='train', required=True, choices=['train-eval', 'train', 'evaluate', 'fine-tune'],
                         help='Mode: train, evaluate, fine-tune')
-    parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist', 'fmnist', 'caltech101', 'caltech256'],
+    parser.add_argument('--dataset', type=str, default='mnist', required=True, choices=['mnist', 'fmnist', 'caltech101', 'caltech256'],
                         help='Dataset name')
     parser.add_argument('--raw-dir', type=str, default=None, 
                         help='Directory to raw dataset for Caltech 101 and 256. E.g: path/to/101_ObjectCategories')
