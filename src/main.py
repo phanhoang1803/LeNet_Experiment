@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Input, AveragePooling2D, Dense
 import argparse
 from data.data_loader import load_data
 from data.preprocess import adapt_input, preprocess
-from models.lenet import LeNetModel, ANN
+from models.creating_model import LeNetModel, ANN
 from models.train import train_model
 from models.evaluate import evaluate_model
 from visualization.visualize import plot_training_curves
@@ -18,7 +18,7 @@ import numpy as np
 def parse_arguments():
     parser = argparse.ArgumentParser(description='LeNet Experiment')
 
-    parser.add_argument('--mode', type=str, default='train', required=True, choices=['train-eval', 'train', 'evaluate', 'fine-tune'],
+    parser.add_argument('--mode', type=str, default='train', required=True, choices=['train', 'evaluate', 'fine-tune'],
                         help='Mode: train, evaluate, fine-tune')
     parser.add_argument('--model', type=str, default='lenet', choices=['lenet', 'ANN'],
                         help='Model name')

@@ -52,8 +52,6 @@ def load_processed_caltech_data(processed_dir):
             'num_classes': len([name for name in os.listdir(train_dir) if os.path.isdir(os.path.join(train_dir, name))]),
         }
     
-    print(dataset)
-    
     return dataset
 
 def create_processed_caltech_dataset(raw_dir, processed_dir):
