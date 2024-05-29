@@ -91,6 +91,11 @@ def main():
         os.makedirs(os.path.join(args.log_dir, 'tb_logs'), exist_ok=True)
         np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_{args.model}_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
     elif args.mode == 'evaluate':
+        if 'lenet' in args.pretrain_path:
+            args.model = 'lenet'
+        elif 'ANN' in args.pretrain_path:
+            args.model = 'ANN'
+            
         model = load_model(args.pretrain_path)
         
         test_ds = test_ds.map(lambda x, y: (adapt_input(x, model.input_shape[1:]), y)).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
@@ -101,6 +106,11 @@ def main():
         # Evaluate the model
         loss, accuracy = evaluate_model(model, test_ds, args)
     elif args.mode == 'fine-tune':
+        if 'lenet' in args.pretrain_path:
+            args.model = 'lenet'
+        elif 'ANN' in args.pretrain_path:
+            args.model = 'ANN'
+        
         # Load the pre-trained model
         base_model = load_model(args.pretrain_path)
         
