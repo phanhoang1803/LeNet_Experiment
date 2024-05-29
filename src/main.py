@@ -115,7 +115,8 @@ def main():
         base_model.trainable = True
         
         checkpoint_dir = args.log_dir + '/ckpt'
-        checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_lenet_{os.path.basename(os.path.dirname(args.pretrain_path)).split("_")[-1]}finetune_{args.dataset}.keras')
+        ds_name = os.path.basename(args.pretrain_path).split('_')[-1].split('.')[0]
+        checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_lenet_{ds_name}finetune_{args.dataset}.keras')
         os.makedirs(checkpoint_dir, exist_ok=True)
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
@@ -129,7 +130,7 @@ def main():
         
         # Save history for analysis
         os.makedirs(os.path.join(args.log_dir, 'tb_logs'), exist_ok=True)
-        np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_lenet_{os.path.basename(os.path.dirname(args.pretrain_path)).split("_")[-1]}finetune_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
+        np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_lenet_{ds_name}finetune_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
 
 if __name__ == "__main__":
     main()
