@@ -20,7 +20,7 @@ def parse_arguments():
 
     parser.add_argument('--mode', type=str, default='train', required=True, choices=['train-eval', 'train', 'evaluate', 'fine-tune'],
                         help='Mode: train, evaluate, fine-tune')
-    parser.add_argument('--model', type=str, required=True, choices=['lenet', 'ANN'],
+    parser.add_argument('--model', type=str, default='lenet', choices=['lenet', 'ANN'],
                         help='Model name')
     parser.add_argument('--dataset', type=str, default='mnist', required=True, choices=['mnist', 'fmnist', 'caltech101', 'caltech256'],
                         help='Dataset name')
