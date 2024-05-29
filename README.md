@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Commands to train and evaluate
 ## Mnist
 python main.py \
@@ -107,3 +108,38 @@ python main.py \
 --dataset caltech256 \
 --raw-dir ... \
 --pretrain-path ...
+=======
+## Training
+* To train
+```Console
+  python main.py \
+  --mode train \
+  --dataset dataset-name \
+  --raw-dir ... \
+  -lr 0.001 \
+  --epochs 50 \
+  --verbose
+```
+* For Caltech 101 and 256, add --raw-dir path/to/dataset
+
+## Evaluating
+```Console
+python main.py \
+--mode evaluate \
+--dataset dataset-name \
+--pretrain-path path/to/pretrain/model
+```
+* For Caltech 101 and 256, add --raw-dir path/to/dataset
+
+## Fine-tuning
+```Console
+python main.py \
+--mode fine-tune \
+--dataset dataset-name \
+--raw-dir path/to/dataset \
+-lr 0.0001 \
+--epochs 50 \
+--verbose \
+--pretrain-path path/to/pretrain/model 
+```
+>>>>>>> e8aff61cbd56e4e29b67570098a35c1b3b1285a0
