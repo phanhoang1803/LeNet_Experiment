@@ -20,6 +20,17 @@ def LeNetModel(input_shape, num_classes):
     model = Model(inputs=X_Input, outputs=x, name='LeNetModel')
     return model
 
+def ANN(input_shape, num_classes):
+    X_Input = Input(shape=input_shape)
+    
+    x = Flatten()(X_Input)
+    x = Dense(units=1024, activation='relu')(x)
+    x = Dense(units=512, activation='relu')(x)
+    x = Dense(units=256, activation='relu')(x)
+    x = Dense(units=num_classes, activation='softmax')(x)
+    
+    model = Model(inputs=X_Input, outputs=x, name='ANN')
+    return model
 
 # class LeNet(tf.keras.Model):
 #     def __init__(self, num_classes, **kwargs):

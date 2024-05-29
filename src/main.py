@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Input, AveragePooling2D, Dense
 import argparse
 from data.data_loader import load_data
 from data.preprocess import adapt_input, preprocess
-from models.lenet import LeNetModel
+from models.lenet import LeNetModel, ANN
 from models.train import train_model
 from models.evaluate import evaluate_model
 from visualization.visualize import plot_training_curves
@@ -20,6 +20,8 @@ def parse_arguments():
 
     parser.add_argument('--mode', type=str, default='train', required=True, choices=['train-eval', 'train', 'evaluate', 'fine-tune'],
                         help='Mode: train, evaluate, fine-tune')
+    parser.add_argument('--model', type=str, required=True, choices=['lenet', 'ANN'],
+                        help='Model name')
     parser.add_argument('--dataset', type=str, default='mnist', required=True, choices=['mnist', 'fmnist', 'caltech101', 'caltech256'],
                         help='Dataset name')
     parser.add_argument('--raw-dir', type=str, default=None, 
@@ -65,11 +67,14 @@ def main():
         validation_ds = validation_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
         test_ds = test_ds.map(preprocess).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
         
-        model = LeNetModel(num_classes=num_classes, input_shape=input_shape)
+        if args.model == 'lenet':
+            model = LeNetModel(num_classes=num_classes, input_shape=input_shape)
+        elif args.model == 'ANN':
+            model = ANN(num_classes=num_classes, input_shape=input_shape)
         
         # Define the checkpoint callback
         checkpoint_dir = args.log_dir + '/ckpt'
-        checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_lenet_{args.dataset}.keras')
+        checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_{args.model}_{args.dataset}.keras')
         os.makedirs(checkpoint_dir, exist_ok=True)
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
@@ -84,7 +89,7 @@ def main():
         
         # Save history for analysis
         os.makedirs(os.path.join(args.log_dir, 'tb_logs'), exist_ok=True)
-        np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_lenet_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
+        np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_{args.model}_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
     elif args.mode == 'evaluate':
         model = load_model(args.pretrain_path)
         
@@ -116,7 +121,7 @@ def main():
         
         checkpoint_dir = args.log_dir + '/ckpt'
         ds_name = os.path.basename(args.pretrain_path).split('_')[-1].split('.')[0]
-        checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_lenet_{ds_name}finetune_{args.dataset}.keras')
+        checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_{args.model}_{ds_name}finetune_{args.dataset}.keras')
         os.makedirs(checkpoint_dir, exist_ok=True)
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
@@ -130,7 +135,7 @@ def main():
         
         # Save history for analysis
         os.makedirs(os.path.join(args.log_dir, 'tb_logs'), exist_ok=True)
-        np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_lenet_{ds_name}finetune_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
+        np.savez(os.path.join(args.log_dir, 'tb_logs', f'history_{args.model}_{ds_name}finetune_{args.dataset}.npz'), loss=history.history['loss'], accuracy=history.history['accuracy'], val_loss=history.history['val_loss'], val_accuracy=history.history['val_accuracy'])
 
 if __name__ == "__main__":
     main()
