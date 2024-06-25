@@ -78,7 +78,16 @@ The LeNet-5 architecture consists of the following layers:
 
 ## Results 📊
 
-The performance of the model can be evaluated using standard metrics such as accuracy, precision, recall, and F1-score. The results will be logged and can be visualized using tools like TensorBoard.
+The performance of the model on various datasets is shown in the table below:
+
+| Model                 | MNIST      | FMNIST     | Caltech101 | Caltech256 |
+|-----------------------|------------|------------|------------|------------|
+| **CNN**               | 0.9865     | 0.8731     | 0.3745     | 0.0257     |
+| **CNN-MNIST Finetune**| -          | -          | 0.3190     | 0.0981     |
+| **CNN-FMNIST Finetune**| -          | -          | 0.3577     | 0.1250     |
+| **ANN**               | 0.9832     | 0.8867     | 0.4006     | 0.1174     |
+| **ANN-MNIST Finetune**| -          | -          | 0.3316     | 0.1039     |
+| **ANN-FMNIST Finetune**| -          | -          | 0.3724     | 0.1298     |
 
 ## Contributing 🤝
 
