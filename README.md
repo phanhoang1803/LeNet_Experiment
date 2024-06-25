@@ -76,7 +76,7 @@ The LeNet-5 architecture consists of the following layers:
 7. **F6 Fully Connected Layer:** 84 units, followed by a tanh activation function.
 8. **Output Layer:** 10 units (for digit classification), followed by a softmax activation function.
 
-## Results 📊
+## **Results 📊**
 
 The performance of the model on various datasets is shown in the table below:
 
