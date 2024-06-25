@@ -13,11 +13,11 @@ Welcome to the LeNet Experiment repository! This project contains an implementat
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
-## Overview 📖
+## Overview
 
 LeNet-5 is one of the earliest convolutional neural network architectures, proposed by Yann LeCun et al. in their 1998 paper. It was primarily used for character recognition tasks such as reading zip codes, digits, etc.
 
-## Installation 📦
+## Installation
 
 To get started with this project, clone the repository and install the necessary dependencies:
 
@@ -27,7 +27,7 @@ cd LeNet_Experiment
 pip install -r requirements.txt
 ```
 
-## Usage 🚀
+## Usage
 
 ### Training
 * To train
@@ -63,7 +63,7 @@ python main.py \
 --pretrain-path path/to/pretrain/model 
 ```
 
-## Architecture 🏛️
+## Architecture
 
 The LeNet-5 architecture consists of the following layers:
 
@@ -76,7 +76,7 @@ The LeNet-5 architecture consists of the following layers:
 7. **F6 Fully Connected Layer:** 84 units, followed by a tanh activation function.
 8. **Output Layer:** 10 units (for digit classification), followed by a softmax activation function.
 
-## **Results 📊**
+## Results
 
 The performance of the model on various datasets is shown in the table below:
 
@@ -89,15 +89,15 @@ The performance of the model on various datasets is shown in the table below:
 | **ANN-MNIST Finetune**| -          | -          | 0.3316     | 0.1039     |
 | **ANN-FMNIST Finetune**| -          | -          | 0.3724     | 0.1298     |
 
-## Contributing 🤝
+## Contributing
 
 Contributions are welcome! If you have any ideas, suggestions, or improvements, feel free to open an issue or submit a pull request. Please ensure your changes are well-documented and tested.
 
-## License 📄
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Acknowledgements 🙏
+## Acknowledgements
 
 - Yann LeCun and his colleagues for developing the LeNet-5 architecture.
 - The open-source community for providing valuable resources and inspiration.
